@@ -1,128 +1,93 @@
 # Claude Code Guidelines
-> Inspired by Andrej Karpathy's observations on LLM coding pitfalls.
-> Drop this file in your project root. Claude Code reads it automatically.
+> Karpathy-Inspired · v2.0 · 6 Principles · Drop in project root
 
 ---
 
-## Principle 1 — Think Before Coding
+## 1 — Think Before Coding
+Don't assume. Don't hide confusion. Surface tradeoffs.
 
-**Don't assume. Don't hide confusion. Surface tradeoffs.**
-
-Before writing any code:
-- State your assumptions explicitly
-- If a request has multiple interpretations, list them — don't pick silently
-- If something is unclear, ask *before* implementing, not after
-- If a simpler approach exists, say so and wait for confirmation
-- If you feel confused mid-task, stop and name what's unclear
-
-> ❌ Bad: Silently picking `json` as the export format  
-> ✅ Good: "This could mean JSON, CSV, or a DB dump — which do you want?"
+- State assumptions explicitly before implementing
+- List multiple interpretations — never pick one silently
+- Ask before coding, not after mistakes
+- Push back when a simpler approach exists
+- Stop mid-task if confused — name what's unclear
 
 ---
 
-## Principle 2 — Simplicity First
+## 2 — Simplicity First
+Minimum code that solves today's problem. Nothing speculative.
 
-**Minimum code that solves the problem. Nothing speculative.**
+- No features beyond what was asked
+- No abstractions for a single use case
+- No "flexibility" that wasn't requested
+- No error handling for impossible scenarios
+- If 200 lines could be 50 → rewrite it
 
-- No features beyond what was explicitly asked
-- No abstractions for single-use code
-- No "flexibility" or "configurability" that wasn't requested
-- No error handling for impossible or unlikely scenarios
-- If 200 lines could be 50, rewrite it
-
-**The test:** Would a senior engineer call this overcomplicated? If yes, simplify.
-
-**Premature complexity checklist (avoid these unless asked):**
-- Abstract base classes for one implementation
-- Strategy pattern for a single known case
-- Config systems for hardcoded values
-- Plugin architectures for a two-case switch
-- Generic type parameters that aren't needed
+**Avoid unless asked:** abstract base classes, strategy patterns, config systems, caching, plugin hooks, event buses.
 
 ---
 
-## Principle 3 — Surgical Changes
+## 3 — Surgical Changes
+Touch only what the task requires.
 
-**Touch only what you must. Clean up only your own mess.**
-
-When editing existing code:
-- Don't "improve" adjacent code, comments, or formatting
+- Don't improve adjacent code, comments, or formatting
 - Don't refactor things that aren't broken
-- Match the existing style — even if you'd do it differently
-- Don't rename variables, add type hints, or change quotes unless asked
+- Match existing style — even if you'd do it differently
+- Mention pre-existing dead code — don't delete it
+- Remove only what YOUR changes made orphaned
 
-**Dead code rules:**
-- If YOUR changes create orphaned imports/functions/variables → remove them
-- If pre-existing dead code exists → mention it, don't delete it
-
-**The test:** Every changed line should trace directly to the user's request.
+**Every changed line must trace directly to the request.**
 
 ---
 
-## Principle 4 — Goal-Driven Execution
+## 4 — Goal-Driven Execution
+Define success criteria. Loop until verified.
 
-**Define success criteria. Loop until verified.**
+Transform tasks into verifiable goals:
+- "Fix the bug" → "Write a test that reproduces it, make it pass"
+- "Add validation" → "Write tests for invalid inputs, make them pass"
+- "Refactor X" → "Tests pass before and after, diff shows only renames"
 
-Transform imperative tasks into verifiable goals:
-
-| Instead of... | Transform to... |
-|---|---|
-| "Add validation" | "Write tests for invalid inputs, then make them pass" |
-| "Fix the bug" | "Write a test that reproduces it, then make it pass" |
-| "Refactor X" | "Ensure tests pass before and after, diff shows only renames" |
-| "Make it faster" | "Response time under 100ms for queries under 1000 rows" |
-
-For multi-step tasks, state a plan with verification:
+For multi-step work, state a plan:
 ```
-1. [What you'll do] → verify: [how you'll confirm it worked]
-2. [What you'll do] → verify: [how you'll confirm it worked]
+1. [action] → verify: [check]
+2. [action] → verify: [check]
 ```
-
-Strong success criteria let Claude loop independently. Weak criteria ("make it work") require constant back-and-forth.
 
 ---
 
-## Principle 5 — Reproduce Before Fixing
+## 5 — Reproduce Before Fixing
+Never patch a bug you haven't confirmed.
 
-**Never patch a bug you haven't reproduced.**
-
-1. Write a test (or minimal script) that fails due to the bug
-2. Confirm it fails — this is your proof the bug exists
+1. Write a failing test that reproduces the bug
+2. Confirm it fails (bug is real)
 3. Fix the code
-4. Confirm the test now passes
-5. Run the full suite — confirm no regressions
+4. Confirm test passes
+5. Run full suite — no regressions
 
-> ❌ Bad: "I think the issue is X, so I'll change Y"  
-> ✅ Good: "Here's a test that reproduces the crash → now here's the fix → test passes"
-
-If you can't reproduce the bug with a test, say so and ask for more context.
+If you can't reproduce → say so, ask for more context.
 
 ---
 
-## Principle 6 — Communicate Tradeoffs
+## 6 — Communicate Tradeoffs
+Surface options briefly before choosing.
 
-**Don't just implement. Inform.**
+For any architectural decision, state:
+- What each option optimizes
+- What it sacrifices
+- Your pick + one-line reason
 
-When multiple approaches exist, briefly surface them:
-- What does each approach optimize for?
-- What does each approach sacrifice?
-- What's your recommendation and why?
-
-Keep it short — 3-5 lines is usually enough. Don't write an essay.
-
-> ❌ Bad: Silently choosing Redis for rate limiting  
-> ✅ Good: "In-memory is simpler to set up; Redis works across multiple servers. Since you're on a single server now, I'll use in-memory — easy to swap later."
+3–5 lines max. Not an essay.
 
 ---
 
-## Tradeoff Note
+## Scope
 
-These guidelines bias toward **caution over speed**. For trivial tasks (typo fixes, obvious one-liners), use judgment — not every change needs full rigor.
-
-The goal is reducing costly mistakes on non-trivial work, not slowing down simple tasks.
+**Full rigor:** auth, payments, data integrity, migrations, APIs, multi-file refactors.  
+**Use judgment:** typo fixes, one-liners, obvious variable renames.
 
 ---
 
-## Project-Specific Guidelines
+## Project-Specific Rules
 
-<!-- Add your project rules below this line -->
+<!-- Add your project rules below -->
