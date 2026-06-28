@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Karpathy-Inspired Claude Code Guidelines — Live Demo</title>
+<meta name="description" content="Six principles that fix how Claude Code behaves. Interactive before/after demo.">
+<meta property="og:title" content="Karpathy-Inspired Claude Code Guidelines">
+<meta property="og:description" content="Six principles that fix how AI coding agents behave — interactive live demo.">
+<meta property="og:url" content="https://burukalamaniReethika.github.io/Karpathy-Inspired-Claude-Code-Guidelines">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f0f0f;
+    --surface: #1a1a1a;
+    --surface2: #242424;
+    --border: #2e2e2e;
+    --border-strong: #3e3e3e;
+    --text: #f0f0f0;
+    --text-secondary: #999;
+    --text-muted: #666;
+    --accent: #7c6fcd;
+    --accent-bg: #1e1a3a;
+    --accent-text: #a89cf0;
+    --green: #4ade80;
+    --green-bg: #0d2818;
+    --green-text: #86efac;
+    --red: #f87171;
+    --red-bg: #2a1010;
+    --red-text: #fca5a5;
+    --mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+    --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --radius: 10px;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* NAV */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(15,15,15,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0.875rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--text);
+    text-decoration: none;
+  }
+  .nav-badge {
+    background: var(--accent-bg);
+    color: var(--accent-text);
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    border: 1px solid var(--accent);
+    font-weight: 500;
+  }
+  .nav-links { display: flex; gap: 8px; align-items: center; }
+  .nav-link {
+    padding: 6px 14px;
+    font-size: 13px;
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--text-secondary);
+    transition: all 0.15s;
+  }
+  .nav-link:hover { color: var(--text); border-color: var(--border-strong); background: var(--surface); }
+  .nav-link.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .nav-link.primary:hover { opacity: 0.85; }
+
+  /* HERO */
+  .hero {
+    text-align: center;
+    padding: 5rem 2rem 4rem;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--accent-bg);
+    color: var(--accent-text);
+    border: 1px solid var(--accent);
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+    letter-spacing: 0.03em;
+  }
+  .hero h1 {
+    font-size: clamp(28px, 5vw, 44px);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    margin-bottom: 1rem;
+    background: linear-gradient(135deg, #fff 0%, var(--accent-text) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero p {
+    font-size: 17px;
+    color: var(--text-secondary);
+    max-width: 500px;
+    margin: 0 auto 2rem;
+    line-height: 1.7;
+  }
+  .hero-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .btn {
+    padding: 10px 22px;
+    border-radius: 9px;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.15s;
+    cursor: pointer;
+    border: none;
+    font-family: var(--sans);
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { opacity: 0.85; transform: translateY(-1px); }
+  .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border-strong); }
+  .btn-secondary:hover { background: var(--surface); border-color: var(--border-strong); }
+
+  /* STATS */
+  .stats {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    padding: 1.5rem 2rem 3rem;
+    flex-wrap: wrap;
+  }
+  .stat { text-align: center; }
+  .stat-value { font-size: 28px; font-weight: 700; color: var(--accent-text); }
+  .stat-label { font-size: 12px; color: var(--text-muted); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.05em; }
+
+  /* DEMO SECTION */
+  .demo {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 1.5rem 5rem;
+  }
+  .demo-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  .demo-header h2 { font-size: 22px; font-weight: 600; margin-bottom: 6px; }
+  .demo-header p { font-size: 14px; color: var(--text-secondary); }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+  }
+  .tab {
+    padding: 7px 16px;
+    font-size: 13px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    cursor: pointer;
+    background: var(--surface);
+    color: var(--text-secondary);
+    transition: all 0.15s;
+    font-family: var(--sans);
+  }
+  .tab:hover { border-color: var(--border-strong); color: var(--text); }
+  .tab.active { background: var(--accent-bg); color: var(--accent-text); border-color: var(--accent); font-weight: 500; }
+
+  /* CARD */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .card-top {
+    padding: 1.25rem 1.5rem 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .card-top h3 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+  .card-top p { font-size: 13px; color: var(--text-secondary); }
+  .request-pill {
+    display: inline-block;
+    background: var(--surface2);
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    padding: 3px 10px;
+    font-size: 12px;
+    font-family: var(--mono);
+    color: var(--text-secondary);
+    margin-top: 8px;
+  }
+
+  /* TOGGLE */
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0.875rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+  .toggle-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 500; }
+  .toggle {
+    display: flex;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .toggle-btn {
+    padding: 5px 16px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-family: var(--sans);
+    transition: all 0.15s;
+  }
+  .toggle-btn.bad.on { background: var(--red-bg); color: var(--red-text); }
+  .toggle-btn.good.on { background: var(--green-bg); color: var(--green-text); }
+
+  /* CODE */
+  .code-header {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 16px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+  }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .code-filename { font-size: 12px; color: var(--text-muted); font-family: var(--mono); margin-left: 4px; }
+  .verdict {
+    margin-left: auto;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .verdict.bad { background: var(--red-bg); color: var(--red-text); border: 1px solid var(--red); }
+  .verdict.good { background: var(--green-bg); color: var(--green-text); border: 1px solid var(--green); }
+
+  pre {
+    padding: 1.25rem 1.5rem;
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.8;
+    color: #c9d1d9;
+    overflow-x: auto;
+    tab-size: 4;
+    min-height: 220px;
+  }
+  .line-added { color: var(--green); }
+  .line-removed { color: var(--red); text-decoration: line-through; opacity: 0.6; }
+  .comment { color: #6e7681; }
+
+  /* INSIGHT */
+  .insight {
+    padding: 0.875rem 1.5rem;
+    background: var(--accent-bg);
+    border-top: 1px solid var(--accent);
+    font-size: 13px;
+    color: var(--accent-text);
+    line-height: 1.6;
+  }
+  .insight strong { color: #fff; font-weight: 600; }
+
+  /* NAV BUTTONS */
+  .nav-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 1.25rem;
+  }
+  .nav-btn {
+    padding: 8px 18px;
+    font-size: 13px;
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    cursor: pointer;
+    background: var(--surface);
+    color: var(--text);
+    font-family: var(--sans);
+    transition: all 0.15s;
+  }
+  .nav-btn:hover:not(:disabled) { background: var(--surface2); }
+  .nav-btn:disabled { opacity: 0.25; cursor: default; }
+  .dots { display: flex; gap: 6px; }
+  .dot-nav { width: 7px; height: 7px; border-radius: 50%; background: var(--border-strong); transition: background 0.2s; cursor: pointer; }
+  .dot-nav.active { background: var(--accent); }
+
+  /* PRINCIPLE not active */
+  .principle { display: none; }
+  .principle.active { display: block; }
+
+  /* INSTALL */
+  .install {
+    max-width: 700px;
+    margin: 0 auto 5rem;
+    padding: 0 1.5rem;
+  }
+  .install h2 { font-size: 20px; font-weight: 600; text-align: center; margin-bottom: 1.5rem; }
+  .install-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+  }
+  .install-label {
+    padding: 10px 16px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+  .install-code {
+    padding: 1rem 1.5rem;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: #c9d1d9;
+    line-height: 2;
+  }
+
+  /* FOOTER */
+  footer {
+    text-align: center;
+    padding: 2rem;
+    border-top: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+  footer a { color: var(--accent-text); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  @media (max-width: 600px) {
+    nav { padding: 0.75rem 1rem; }
+    .nav-links { gap: 6px; }
+    .hero { padding: 3rem 1.25rem 2.5rem; }
+    .demo { padding: 0 1rem 4rem; }
+    pre { font-size: 11.5px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="#">
+    Karpathy Guidelines
+    <span class="nav-badge">v2.0</span>
+  </a>
+  <div class="nav-links">
+    <a class="nav-link" href="https://github.com/BurukalaManiReethika/Karpathy-Inspired-Claude-Code-Guidelines" target="_blank">GitHub</a>
+    <a class="nav-link primary" href="https://raw.githubusercontent.com/BurukalaManiReethika/Karpathy-Inspired-Claude-Code-Guidelines/main/CLAUDE.md" target="_blank">Download CLAUDE.md</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-badge">⚡ Karpathy-Inspired</div>
+  <h1>Fix How Claude Code Behaves</h1>
+  <p>One file. Six principles. Drop it in your project and Claude Code stops guessing, over-engineering, and touching code it shouldn't.</p>
+  <div class="hero-actions">
+    <a class="btn btn-primary" href="https://github.com/BurukalaManiReethika/Karpathy-Inspired-Claude-Code-Guidelines" target="_blank">⭐ Star on GitHub</a>
+    <a class="btn btn-secondary" href="#demo">See Live Demo ↓</a>
+  </div>
+</section>
+
+<div class="stats">
+  <div class="stat"><div class="stat-value">6</div><div class="stat-label">Principles</div></div>
+  <div class="stat"><div class="stat-value">1</div><div class="stat-label">File to drop</div></div>
+  <div class="stat"><div class="stat-value">30s</div><div class="stat-label">To install</div></div>
+  <div class="stat"><div class="stat-value">MIT</div><div class="stat-label">License</div></div>
+</div>
+
+<section class="demo" id="demo">
+  <div class="demo-header">
+    <h2>Interactive Demo</h2>
+    <p>Toggle between what LLMs do wrong and what should happen.</p>
+  </div>
+
+  <div class="tabs" id="tabs">
+    <button class="tab active" onclick="showP(0)">1. Think First</button>
+    <button class="tab" onclick="showP(1)">2. Simplicity</button>
+    <button class="tab" onclick="showP(2)">3. Surgical</button>
+    <button class="tab" onclick="showP(3)">4. Goals</button>
+    <button class="tab" onclick="showP(4)">5. Reproduce</button>
+    <button class="tab" onclick="showP(5)">6. Tradeoffs</button>
+  </div>
+
+  <!-- P0 -->
+  <div class="principle active" id="p0">
+    <div class="card">
+      <div class="card-top">
+        <h3>Principle 1 — Think Before Coding</h3>
+        <p>Don't assume. Don't hide confusion. Surface tradeoffs.</p>
+        <div class="request-pill">"Add a feature to export user data"</div>
+      </div>
+      <div class="toggle-row">
+        <span class="toggle-label">View:</span>
+        <div class="toggle">
+          <button class="toggle-btn bad on" onclick="tog(0,'bad')">❌ LLM default</button>
+          <button class="toggle-btn good" onclick="tog(0,'good')">✅ Correct</button>
+        </div>
+      </div>
+      <div class="code-header">
+        <div class="dot" style="background:#f87171"></div>
+        <div class="dot" style="background:#fbbf24"></div>
+        <div class="dot" style="background:#34d399"></div>
+        <span class="code-filename" id="fn0">export.py</span>
+        <span class="verdict bad" id="vd0">WRONG</span>
+      </div>
+      <pre id="cd0">def export_users(format='json'):
+    <span class="comment"># assumed ALL users — no pagination, no privacy check</span>
+    users = User.query.all()
+    <span class="comment"># assumed file path without asking</span>
+    with open('users.json', 'w') as f:
+        <span class="comment"># assumed which fields to include</span>
+        json.dump([u.to_dict() for u in users], f)
+
+<span class="comment"># Problems:
+# - Exports ALL users (privacy/GDPR risk)
+# - Hardcoded file path
+# - No pagination for large datasets
+# - Assumed JSON format without asking</span></pre>
+      <div class="insight" id="ins0"><strong>Problem:</strong> Silently assumed scope (all users), delivery (local file), format (JSON), and fields — without asking any of them. One wrong assumption can mean a GDPR violation.</div>
+    </div>
+  </div>
+
+  <!-- P1 -->
+  <div class="principle" id="p1">
+    <div class="card">
+      <div class="card-top">
+        <h3>Principle 2 — Simplicity First</h3>
+        <p>Minimum code that solves today's problem. Nothing speculative.</p>
+        <div class="request-pill">"Add a function to calculate discount"</div>
+      </div>
+      <div class="toggle-row">
+        <span class="toggle-label">View:</span>
+        <div class="toggle">
+          <button class="toggle-btn bad on" onclick="tog(1,'bad')">❌ LLM default</button>
+          <button class="toggle-btn good" onclick="tog(1,'good')">✅ Correct</button>
+        </div>
+      </div>
+      <div class="code-header">
+        <div class="dot" style="background:#f87171"></div>
+        <div class="dot" style="background:#fbbf24"></div>
+        <div class="dot" style="background:#34d399"></div>
+        <span class="code-filename" id="fn1">discount.py</span>
+        <span class="verdict bad" id="vd1">WRONG</span>
+      </div>
+      <pre id="cd1">from abc import ABC, abstractmethod
+from dataclasses import dataclass
+
+class DiscountStrategy(ABC):
+    @abstractmethod
+    def calculate(self, amount: float) -> float: ...
+
+class PercentageDiscount(DiscountStrategy):
+    def __init__(self, pct): self.pct = pct
+    def calculate(self, amount):
+        return amount * (self.pct / 100)
+
+class FixedDiscount(DiscountStrategy):
+    def __init__(self, fixed): self.fixed = fixed
+    def calculate(self, amount): return min(self.fixed, amount)
+
+@dataclass
+class DiscountConfig:
+    strategy: DiscountStrategy
+    min_purchase: float = 0.0
+
+class DiscountCalculator:
+    def __init__(self, config): self.config = config
+    def apply(self, amount):
+        if amount < self.config.min_purchase: return 0
+        return self.config.strategy.calculate(amount)
+
+<span class="comment"># 60+ lines for a single use case that doesn't exist yet</span></pre>
+      <div class="insight" id="ins1"><strong>Problem:</strong> Strategy pattern, abstract classes, dataclasses — for one discount type that was never asked for. 60+ lines when 3 would do.</div>
+    </div>
+  </div>
+
+  <!-- P2 -->
+  <div class="principle" id="p2">
+    <div class="card">
+      <div class="card-top">
+        <h3>Principle 3 — Surgical Changes</h3>
+        <p>Touch only what the task requires. Match existing style.</p>
+        <div class="request-pill">"Fix the bug where empty emails crash the validator"</div>
+      </div>
+      <div class="toggle-row">
+        <span class="toggle-label">View:</span>
+        <div class="toggle">
+          <button class="toggle-btn bad on" onclick="tog(2,'bad')">❌ LLM default</button>
+          <button class="toggle-btn good" onclick="tog(2,'good')">✅ Correct</button>
+        </div>
+      </div>
+      <div class="code-header">
+        <div class="dot" style="background:#f87171"></div>
+        <div class="dot" style="background:#fbbf24"></div>
+        <div class="dot" style="background:#34d399"></div>
+        <span class="code-filename" id="fn2">validators.py — diff view</span>
+        <span class="verdict bad" id="vd2">WRONG</span>
+      </div>
+      <pre id="cd2"> def validate_user(user_data):
+<span class="line-added">+    """Validate user data."""</span>          <span class="comment"># added docstring (unrequested)</span>
+<span class="line-removed">-    if not user_data.get('email'):</span>
+<span class="line-added">+    email = user_data.get('email','').strip()</span>
+<span class="line-added">+    if not email:</span>
+         raise ValueError("Email required")
+<span class="line-removed">-    if '@' not in user_data['email']:</span>
+<span class="line-added">+    if '@' not in email or '.' not in email.split('@')[1]:</span>  <span class="comment"># "improved"</span>
+         raise ValueError("Invalid email")
+<span class="line-removed">-    if not user_data.get('username'):</span>
+<span class="line-added">+    username = user_data.get('username','').strip()</span>   <span class="comment"># reformatted</span>
+<span class="line-added">+    if not username:</span>
+         raise ValueError("Username required")
+<span class="line-added">+    if len(username) &lt; 3:                  # NEW RULE — nobody asked</span>
+<span class="line-added">+        raise ValueError("Username too short")</span>
+     return True</pre>
+      <div class="insight" id="ins2"><strong>Problem:</strong> Added docstring, "improved" email regex beyond the bug, reformatted username block, added a min-length rule nobody requested. Only the empty email crash needed fixing.</div>
+    </div>
+  </div>
+
+  <!-- P3 -->
+  <div class="principle" id="p3">
+    <div class="card">
+      <div class="card-top">
+        <h3>Principle 4 — Goal-Driven Execution</h3>
+        <p>Define success criteria. Loop until verified.</p>
+        <div class="request-pill">"Fix the authentication system"</div>
+      </div>
+      <div class="toggle-row">
+        <span class="toggle-label">View:</span>
+        <div class="toggle">
+          <button class="toggle-btn bad on" onclick="tog(3,'bad')">❌ LLM default</button>
+          <button class="toggle-btn good" onclick="tog(3,'good')">✅ Correct</button>
+        </div>
+      </div>
+      <div class="code-header">
+        <div class="dot" style="background:#f87171"></div>
+        <div class="dot" style="background:#fbbf24"></div>
+        <div class="dot" style="background:#34d399"></div>
+        <span class="code-filename" id="fn3">response</span>
+        <span class="verdict bad" id="vd3">WRONG</span>
+      </div>
+      <pre id="cd3"><span class="comment"># LLM response:</span>
+"I'll fix the authentication system by:
+  1. Reviewing the code
+  2. Identifying issues
+  3. Making improvements
+  4. Testing the changes"
+
+<span class="comment"># Then proceeds to make unverifiable changes.
+# No success criteria.
+# No tests written.
+# No way to know if it actually worked.
+# "Done" means nothing here.</span></pre>
+      <div class="insight" id="ins3"><strong>Problem:</strong> Zero success criteria = zero way to verify "done". Karpathy: <em>"LLMs are exceptionally good at looping until they meet specific goals — give it success criteria and watch it go."</em></div>
+    </div>
+  </div>
+
+  <!-- P4 -->
+  <div class="principle" id="p4">
+    <div class="card">
+      <div class="card-top">
+        <h3>Principle 5 — Reproduce Before Fixing</h3>
+        <p>Never patch a bug you haven't confirmed exists.</p>
+        <div class="request-pill">"The sorting breaks with duplicate scores"</div>
+      </div>
+      <div class="toggle-row">
+        <span class="toggle-label">View:</span>
+        <div class="toggle">
+          <button class="toggle-btn bad on" onclick="tog(4,'bad')">❌ LLM default</button>
+          <button class="toggle-btn good" onclick="tog(4,'good')">✅ Correct</button>
+        </div>
+      </div>
+      <div class="code-header">
+        <div class="dot" style="background:#f87171"></div>
+        <div class="dot" style="background:#fbbf24"></div>
+        <div class="dot" style="background:#34d399"></div>
+        <span class="code-filename" id="fn4">sort.py</span>
+        <span class="verdict bad" id="vd4">WRONG</span>
+      </div>
+      <pre id="cd4"><span class="comment"># Immediately "fixes" without confirming the bug</span>
+def sort_scores(scores):
+    return sorted(
+        scores,
+        key=lambda x: (-x['score'], x['name'])
+    )
+
+<span class="comment"># Bug was never reproduced with a test.
+# No confirmation the fix actually works.
+# No regression check.
+# If this is wrong — no way to know.</span></pre>
+      <div class="insight" id="ins4"><strong>Problem:</strong> Blind patch. No failing test to prove the bug existed. No confirmation the fix works. Always: reproduce → confirm → fix → verify.</div>
+    </div>
+  </div>
+
+  <!-- P5 -->
+  <div class="principle" id="p5">
+    <div class="card">
+      <div class="card-top">
+        <h3>Principle 6 — Communicate Tradeoffs</h3>
+        <p>Surface options before choosing. 3–5 lines, not an essay.</p>
+        <div class="request-pill">"Add rate limiting to the API"</div>
+      </div>
+      <div class="toggle-row">
+        <span class="toggle-label">View:</span>
+        <div class="toggle">
+          <button class="toggle-btn bad on" onclick="tog(5,'bad')">❌ LLM default</button>
+          <button class="toggle-btn good" onclick="tog(5,'good')">✅ Correct</button>
+        </div>
+      </div>
+      <div class="code-header">
+        <div class="dot" style="background:#f87171"></div>
+        <div class="dot" style="background:#fbbf24"></div>
+        <div class="dot" style="background:#34d399"></div>
+        <span class="code-filename" id="fn5">rate_limit.py</span>
+        <span class="verdict bad" id="vd5">WRONG</span>
+      </div>
+      <pre id="cd5">import redis
+
+<span class="comment"># Silently:
+# - Installed Redis (new infra dependency)
+# - Added docker-compose requirement
+# - Changed production architecture
+# - Never asked if Redis was even available</span>
+
+r = redis.Redis(host='localhost', port=6379)
+
+def is_rate_limited(user_id: str) -> bool:
+    key = f"rate:{user_id}"
+    count = r.incr(key)
+    if count == 1:
+        r.expire(key, 60)
+    return count > 100</pre>
+      <div class="insight" id="ins5"><strong>Problem:</strong> Silently added Redis — a real infra dependency — without mentioning in-memory was an option. On a single server, in-memory works fine and needs zero setup.</div>
+    </div>
+  </div>
+
+  <div class="nav-row">
+    <button class="nav-btn" id="prev-btn" onclick="navigate(-1)" disabled>← Prev</button>
+    <div class="dots" id="dots"></div>
+    <button class="nav-btn" id="next-btn" onclick="navigate(1)">Next →</button>
+  </div>
+</section>
+
+<section class="install">
+  <h2>Install in 30 seconds</h2>
+  <div class="install-card">
+    <div class="install-label">Option A — Per project (curl)</div>
+    <div class="install-code">curl -o CLAUDE.md https://raw.githubusercontent.com/BurukalaManiReethika/Karpathy-Inspired-Claude-Code-Guidelines/main/CLAUDE.md</div>
+  </div>
+  <div class="install-card">
+    <div class="install-label">Option B — Claude Code plugin (all projects)</div>
+    <div class="install-code">/plugin marketplace add BurukalaManiReethika/Karpathy-Inspired-Claude-Code-Guidelines<br>/plugin install karpathy-code-guidelines@karpathy-guidelines</div>
+  </div>
+</section>
+
+<footer>
+  Built by <a href="https://github.com/BurukalaManiReethika" target="_blank">BurukalaManiReethika</a> ·
+  Inspired by <a href="https://x.com/karpathy" target="_blank">Andrej Karpathy</a> ·
+  <a href="https://github.com/BurukalaManiReethika/Karpathy-Inspired-Claude-Code-Guidelines" target="_blank">GitHub</a> · MIT License
+</footer>
+
+<script>
+const BAD = [
+  { fn:'export.py', ins:'<strong>Problem:</strong> Silently assumed scope (all users), delivery (local file), format (JSON), and fields — without asking any of them. One wrong assumption can mean a GDPR violation.', cd:`def export_users(format='json'):\n    <span class="comment"># assumed ALL users — no pagination, no privacy check</span>\n    users = User.query.all()\n    <span class="comment"># assumed file path without asking</span>\n    with open('users.json', 'w') as f:\n        <span class="comment"># assumed which fields to include</span>\n        json.dump([u.to_dict() for u in users], f)\n\n<span class="comment"># Problems:\n# - Exports ALL users (privacy/GDPR risk)\n# - Hardcoded file path\n# - No pagination for large datasets\n# - Assumed JSON format without asking</span>` },
+  { fn:'discount.py', ins:'<strong>Problem:</strong> Strategy pattern, abstract classes, dataclasses — for one discount type that was never asked for. 60+ lines when 3 would do.', cd:`from abc import ABC, abstractmethod\nfrom dataclasses import dataclass\n\nclass DiscountStrategy(ABC):\n    @abstractmethod\n    def calculate(self, amount: float) -> float: ...\n\nclass PercentageDiscount(DiscountStrategy):\n    def __init__(self, pct): self.pct = pct\n    def calculate(self, amount):\n        return amount * (self.pct / 100)\n\nclass FixedDiscount(DiscountStrategy):\n    def __init__(self, fixed): self.fixed = fixed\n    def calculate(self, amount): return min(self.fixed, amount)\n\n@dataclass\nclass DiscountConfig:\n    strategy: DiscountStrategy\n    min_purchase: float = 0.0\n\nclass DiscountCalculator:\n    def __init__(self, config): self.config = config\n    def apply(self, amount):\n        if amount < self.config.min_purchase: return 0\n        return self.config.strategy.calculate(amount)\n\n<span class="comment"># 60+ lines for a single use case that doesn't exist yet</span>` },
+  { fn:'validators.py — diff view', ins:'<strong>Problem:</strong> Added docstring, "improved" email regex beyond the bug, reformatted username block, added a min-length rule nobody requested. Only the empty email crash needed fixing.', cd:` def validate_user(user_data):\n<span class="line-added">+    """Validate user data."""</span>          <span class="comment"># added docstring (unrequested)</span>\n<span class="line-removed">-    if not user_data.get('email'):</span>\n<span class="line-added">+    email = user_data.get('email','').strip()</span>\n<span class="line-added">+    if not email:</span>\n         raise ValueError("Email required")\n<span class="line-removed">-    if '@' not in user_data['email']:</span>\n<span class="line-added">+    if '@' not in email or '.' not in email.split('@')[1]:</span>  <span class="comment"># "improved"</span>\n         raise ValueError("Invalid email")\n<span class="line-removed">-    if not user_data.get('username'):</span>\n<span class="line-added">+    username = user_data.get('username','').strip()</span>\n<span class="line-added">+    if not username:</span>\n         raise ValueError("Username required")\n<span class="line-added">+    if len(username) &lt; 3:                  # NEW RULE — nobody asked</span>\n<span class="line-added">+        raise ValueError("Username too short")</span>\n     return True` },
+  { fn:'response', ins:'<strong>Problem:</strong> Zero success criteria = zero way to verify "done". Karpathy: <em>"LLMs are exceptionally good at looping until they meet specific goals — give it success criteria and watch it go."</em>', cd:`<span class="comment"># LLM response:</span>\n"I'll fix the authentication system by:\n  1. Reviewing the code\n  2. Identifying issues\n  3. Making improvements\n  4. Testing the changes"\n\n<span class="comment"># Then proceeds to make unverifiable changes.\n# No success criteria.\n# No tests written.\n# No way to know if it actually worked.\n# "Done" means nothing here.</span>` },
+  { fn:'sort.py', ins:'<strong>Problem:</strong> Blind patch. No failing test to prove the bug existed. No confirmation the fix works. Always: reproduce → confirm → fix → verify.', cd:`<span class="comment"># Immediately "fixes" without confirming the bug</span>\ndef sort_scores(scores):\n    return sorted(\n        scores,\n        key=lambda x: (-x['score'], x['name'])\n    )\n\n<span class="comment"># Bug was never reproduced with a test.\n# No confirmation the fix actually works.\n# No regression check.\n# If this is wrong — no way to know.</span>` },
+  { fn:'rate_limit.py', ins:'<strong>Problem:</strong> Silently added Redis — a real infra dependency — without mentioning in-memory was an option. On a single server, in-memory works fine and needs zero setup.', cd:`import redis\n\n<span class="comment"># Silently:\n# - Installed Redis (new infra dependency)\n# - Added docker-compose requirement\n# - Changed production architecture\n# - Never asked if Redis was even available</span>\n\nr = redis.Redis(host='localhost', port=6379)\n\ndef is_rate_limited(user_id: str) -> bool:\n    key = f"rate:{user_id}"\n    count = r.incr(key)\n    if count == 1:\n        r.expire(key, 60)\n    return count > 100` }
+];
+
+const GOOD = [
+  { fn:'response — before coding', ins:'<strong>Correct:</strong> Lists all 4 assumptions before touching code. Proposes the simplest interpretation and waits for confirmation. Zero wasted work.', cd:`<span class="comment"># Before implementing, I need to clarify:</span>\n\n<span class="comment"># 1. Scope — export ALL users or filtered?\n#    (GDPR/privacy implications if PII)</span>\n\n<span class="comment"># 2. Delivery — browser download, background\n#    job + email, or API response?</span>\n\n<span class="comment"># 3. Fields — which fields to include?\n#    (tokens, hashes may be sensitive)</span>\n\n<span class="comment"># 4. Volume — thousands or millions?\n#    (affects streaming vs bulk approach)</span>\n\n<span class="comment"># Simplest interpretation: paginated JSON API\n# of non-sensitive fields. Is that right?</span>` },
+  { fn:'discount.py', ins:'<strong>Correct:</strong> 3 lines. Solves the problem. Add Strategy pattern only when you actually have multiple discount types — which may never happen.', cd:`def calculate_discount(amount: float,\n                       percent: float) -> float:\n    """Return discount amount. percent is 0-100."""\n    return amount * (percent / 100)\n\n\n<span class="comment"># 3 lines. Done.\n# Add Strategy pattern ONLY when you have\n# multiple discount types at runtime.\n# Not before. Possibly never.</span>` },
+  { fn:'validators.py — diff view', ins:'<strong>Correct:</strong> Only 4 lines changed. Comments preserved. Username block untouched. Style matched. Every changed line traces to the bug report.', cd:` def validate_user(user_data):\n     <span class="comment"># Check email format</span>\n<span class="line-removed">-    if not user_data.get('email'):</span>\n<span class="line-added">+    email = user_data.get('email', '')</span>\n<span class="line-added">+    if not email or not email.strip():</span>\n         raise ValueError("Email required")\n \n     <span class="comment"># Basic email validation</span>\n<span class="line-removed">-    if '@' not in user_data['email']:</span>\n<span class="line-added">+    if '@' not in email:</span>\n         raise ValueError("Invalid email")\n \n     <span class="comment"># Check username (unchanged)</span>\n     if not user_data.get('username'):\n         raise ValueError("Username required")\n     return True` },
+  { fn:'response — plan', ins:'<strong>Correct:</strong> Asks what\'s actually broken, then defines a 4-step verifiable plan. Each step has a concrete check. "Done" is unambiguous.', cd:`<span class="comment"># "Fix authentication" is too broad.</span>\n\n<span class="comment"># If issue = "users stay logged in after password change":</span>\n\n<span class="comment"># Step 1: Write test: change pw → old JWT rejected\n#   verify: test FAILS (bug confirmed real)</span>\n\n<span class="comment"># Step 2: Fix: invalidate sessions on pw change\n#   verify: test PASSES</span>\n\n<span class="comment"># Step 3: Edge cases: multiple devices, concurrent\n#   verify: additional tests pass</span>\n\n<span class="comment"># Step 4: Regression: full auth suite green\n#   verify: nothing else broken</span>\n\n<span class="comment"># What specific behavior is broken?</span>` },
+  { fn:'test_sort.py → sort.py', ins:'<strong>Correct:</strong> Failing test first — proves the bug exists. Fix only after reproduction. Confirm pass + run full suite. No surprises.', cd:`<span class="comment"># Step 1: Write a test that FAILS (proves bug is real)</span>\ndef test_sort_stable_with_duplicates():\n    scores = [\n        {'name': 'Alice', 'score': 100},\n        {'name': 'Bob',   'score': 100},\n    ]\n    results = [sort_scores(scores) for _ in range(10)]\n    first = [r[0]['name'] for r in results]\n    assert len(set(first)) == 1  <span class="comment"># FAILS → bug confirmed</span>\n\n<span class="comment"># Step 2: Now fix (we know what "fixed" means)</span>\ndef sort_scores(scores):\n    return sorted(scores,\n        key=lambda x: (-x['score'], x['name']))\n\n<span class="comment"># Step 3: Test passes + full suite green ✓</span>` },
+  { fn:'response + rate_limit.py', ins:'<strong>Correct:</strong> 3 lines explaining both options and why in-memory wins here. Makes a recommendation, asks for confirmation, then implements the simpler choice.', cd:`<span class="comment"># Two options for rate limit storage:</span>\n<span class="comment"># In-memory: zero deps, instant — resets on restart</span>\n<span class="comment"># Redis:     survives restarts — needs Redis running</span>\n<span class="comment"># Single server → in-memory. Trivial to swap later.</span>\n\nfrom collections import defaultdict\nimport time\n\n_store = defaultdict(list)\n\ndef is_rate_limited(user_id, limit=100, window=60):\n    now = time.time()\n    _store[user_id] = [\n        t for t in _store[user_id]\n        if now - t < window\n    ]\n    _store[user_id].append(now)\n    return len(_store[user_id]) > limit` }
+];
+
+let cur = 0;
+const total = 6;
+
+function tog(idx, mode) {
+  const data = mode === 'bad' ? BAD[idx] : GOOD[idx];
+  document.getElementById('fn'+idx).textContent = data.fn;
+  const vd = document.getElementById('vd'+idx);
+  vd.textContent = mode === 'bad' ? 'WRONG' : 'CORRECT';
+  vd.className = 'verdict ' + mode;
+  document.getElementById('cd'+idx).innerHTML = data.cd;
+  document.getElementById('ins'+idx).innerHTML = data.ins;
+  document.querySelectorAll('#p'+idx+' .toggle-btn').forEach(b => b.classList.remove('on'));
+  document.querySelector('#p'+idx+' .toggle-btn.'+mode).classList.add('on');
+}
+
+function showP(idx) {
+  document.querySelectorAll('.principle').forEach((p,i) => p.classList.toggle('active', i===idx));
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', i===idx));
+  cur = idx;
+  document.getElementById('prev-btn').disabled = idx===0;
+  document.getElementById('next-btn').disabled = idx===total-1;
+  renderDots();
+  window.scrollTo({top: document.getElementById('demo').offsetTop - 80, behavior:'smooth'});
+}
+
+function navigate(dir) {
+  const n = cur + dir;
+  if (n>=0 && n<total) showP(n);
+}
+
+function renderDots() {
+  document.getElementById('dots').innerHTML = Array.from({length:total},(_,i)=>
+    `<div class="dot-nav${i===cur?' active':''}" onclick="showP(${i})"></div>`
+  ).join('');
+}
+
+renderDots();
+</script>
+</body>
+</html>
