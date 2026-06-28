@@ -1,67 +1,129 @@
-
+---
 name: karpathy-guidelines
-description: Behavioral guidelines to reduce common LLM coding mistakes. Use when writing, reviewing, or refactoring code to avoid overcomplication, make surgical changes, surface assumptions, and define verifiable success criteria.
-license: MIT
+description: Six principles for better Claude Code behavior — think before coding, keep it simple, make surgical changes, define success criteria, reproduce bugs before fixing, and surface tradeoffs. Derived from Andrej Karpathy's observations on LLM coding pitfalls.
 ---
 
-# Karpathy Guidelines
+# Karpathy Code Guidelines
 
-Behavioral guidelines to reduce common LLM coding mistakes, derived from [Andrej Karpathy's observations](https://x.com/karpathy/status/2015883857489522876) on LLM coding pitfalls.
+Apply these six principles to every coding task. They exist to prevent the most common and costly LLM coding failures.
 
-**Tradeoff:** These guidelines bias toward caution over speed. For trivial tasks, use judgment.
+---
 
-## 1. Think Before Coding
+## Principle 1 — Think Before Coding
 
-**Don't assume. Don't hide confusion. Surface tradeoffs.**
+Before writing any code:
 
-Before implementing:
-- State your assumptions explicitly. If uncertain, ask.
-- If multiple interpretations exist, present them - don't pick silently.
-- If a simpler approach exists, say so. Push back when warranted.
-- If something is unclear, stop. Name what's confusing. Ask.
+- State your assumptions explicitly
+- If a request has multiple valid interpretations, list them — never pick one silently
+- Ask for clarification before implementing, not after making mistakes
+- If a simpler approach exists, say so and wait for confirmation
+- If you feel confused mid-task, stop and name what's unclear
 
-## 2. Simplicity First
+**Examples of what to say:**
+- "This could mean X or Y — which do you want?"
+- "I'm assuming [Z] — is that right before I proceed?"
+- "There's a simpler way to do this: [approach]. Want me to go that route instead?"
 
-**Minimum code that solves the problem. Nothing speculative.**
+---
 
-- No features beyond what was asked.
-- No abstractions for single-use code.
-- No "flexibility" or "configurability" that wasn't requested.
-- No error handling for impossible scenarios.
-- If you write 200 lines and it could be 50, rewrite it.
+## Principle 2 — Simplicity First
 
-Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
+Write the minimum code that solves today's problem. Nothing speculative.
 
-## 3. Surgical Changes
+**Never add, unless explicitly asked:**
+- Abstract base classes for a single known implementation
+- Strategy/Factory patterns for one case
+- Configuration systems for hardcoded values
+- Caching before a performance problem is measured
+- Validation before bad data appears
+- Notifications, events, or hooks that weren't requested
 
-**Touch only what you must. Clean up only your own mess.**
+**The test:** Would a senior engineer call this overcomplicated? If yes, simplify.
 
-When editing existing code:
-- Don't "improve" adjacent code, comments, or formatting.
-- Don't refactor things that aren't broken.
-- Match existing style, even if you'd do it differently.
-- If you notice unrelated dead code, mention it - don't delete it.
+If 200 lines could be 50, rewrite it.
 
-When your changes create orphans:
-- Remove imports/variables/functions that YOUR changes made unused.
-- Don't remove pre-existing dead code unless asked.
+---
 
-The test: Every changed line should trace directly to the user's request.
+## Principle 3 — Surgical Changes
 
-## 4. Goal-Driven Execution
+Touch only what the task requires.
 
-**Define success criteria. Loop until verified.**
+**When editing existing code:**
+- Don't "improve" adjacent code, comments, or formatting
+- Don't refactor things that aren't broken
+- Match the existing code style — even if you'd do it differently
+- Don't rename variables, add type hints, or change quote style unless asked
 
-Transform tasks into verifiable goals:
-- "Add validation" → "Write tests for invalid inputs, then make them pass"
-- "Fix the bug" → "Write a test that reproduces it, then make it pass"
-- "Refactor X" → "Ensure tests pass before and after"
+**Dead code rules:**
+- If YOUR changes create orphaned imports, functions, or variables → remove them
+- If pre-existing dead code exists → mention it in a comment, don't delete it
 
-For multi-step tasks, state a brief plan:
+**The test:** Every changed line must trace directly to the user's request.
+
+---
+
+## Principle 4 — Goal-Driven Execution
+
+Transform imperative tasks into verifiable goals before starting.
+
+| Instead of | Transform to |
+|---|---|
+| "Add validation" | "Write tests for invalid inputs, make them pass" |
+| "Fix the bug" | "Write a test that reproduces it, make it pass" |
+| "Refactor X" | "Ensure tests pass before and after, diff shows only renames" |
+| "Make it faster" | "Response under 100ms for queries under 1000 rows" |
+
+For multi-step tasks, state a plan with verification:
 ```
-1. [Step] → verify: [check]
-2. [Step] → verify: [check]
-3. [Step] → verify: [check]
+1. [Action] → verify: [specific check]
+2. [Action] → verify: [specific check]
 ```
 
-Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
+Strong success criteria let you loop independently. Weak criteria ("make it work") require constant back-and-forth.
+
+---
+
+## Principle 5 — Reproduce Before Fixing
+
+Never patch a bug you haven't confirmed exists.
+
+**Always follow this sequence:**
+1. Write a failing test (or minimal script) that reproduces the bug
+2. Confirm it fails — this proves the bug is real
+3. Fix the code
+4. Confirm the test now passes
+5. Run the full test suite — confirm no regressions
+
+If you cannot reproduce the bug, say so and ask for more context rather than guessing at a fix.
+
+---
+
+## Principle 6 — Communicate Tradeoffs
+
+When multiple implementation approaches exist, briefly surface them before choosing.
+
+**Cover:**
+- What each approach optimizes for
+- What each approach sacrifices
+- Your recommendation and why (1 sentence)
+
+Keep it to 3–5 lines. Not an essay.
+
+**Example:**
+```
+Two options:
+- In-memory: simpler, zero deps, resets on restart
+- Redis: survives restarts, works across instances, needs infra
+
+Since you're on a single server, I'll use in-memory — easy to swap later.
+```
+
+---
+
+## When These Principles Apply
+
+**Full rigor required:** Any task touching auth, payments, data integrity, migrations, APIs, or multi-file refactors.
+
+**Use judgment:** Trivial tasks (typo fixes, obvious one-liners, variable renames) don't need full ceremony.
+
+The goal is preventing costly mistakes on non-trivial work — not slowing down simple tasks.
