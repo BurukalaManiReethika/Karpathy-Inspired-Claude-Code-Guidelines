@@ -1,0 +1,16 @@
+# Claude Code Plugin — Karpathy-Inspired Guidelines
+
+name: karpathy-code-guidelines
+version: 2.0.0
+description: >
+  Six principles for better Claude Code behavior, derived from Andrej Karpathy's
+  observations on LLM coding pitfalls. Reduces silent assumptions, overengineering,
+  drive-by refactoring, and blind bug patches.
+
+author: BurukalaManiReethika
+license: MIT
+
+# The plugin injects CLAUDE.md content as a persistent system instruction
+# across all projects when installed via the Claude Code plugin marketplace.
+
+source: ../CLAUDE.md
