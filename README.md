@@ -1,12 +1,13 @@
 # Karpathy-Inspired Claude Code Guidelines
 
-> A single `CLAUDE.md` file that fixes how Claude Code behaves — derived from Andrej Karpathy's observations on LLM coding pitfalls.
+> A single `CLAUDE.md` — and a proper Claude Code plugin — that fixes how AI coding agents behave.  
+> Derived from Andrej Karpathy's observations on LLM coding pitfalls.
 
 ---
 
-## The Problem
+## Why This Exists
 
-Karpathy put it plainly:
+On January 26, 2026, Karpathy described what he found after switching from 80% manual coding to 80% agent-driven coding:
 
 > *"The models make wrong assumptions on your behalf and just run along with them without checking. They don't manage their confusion, don't seek clarifications, don't surface inconsistencies, don't present tradeoffs, don't push back when they should."*
 
@@ -14,60 +15,34 @@ Karpathy put it plainly:
 
 > *"They still sometimes change/remove comments and code they don't sufficiently understand as side effects, even if orthogonal to the task."*
 
-These aren't edge cases. They're the default behavior.
-
----
-
-## The Solution
-
-Six principles in one `CLAUDE.md` file — placed in your project root, read automatically by Claude Code.
-
-| Principle | What It Fixes |
-|---|---|
-| **Think Before Coding** | Silent assumptions, hidden confusion, skipped tradeoffs |
-| **Simplicity First** | Overengineering, premature abstraction, bloated PRs |
-| **Surgical Changes** | Drive-by refactoring, style drift, touching unrelated code |
-| **Goal-Driven Execution** | Vague tasks, no success criteria, unclear done state |
-| **Reproduce Before Fixing** | Patches without confirmation, no regression safety |
-| **Communicate Tradeoffs** | Silent architecture decisions, no alternatives surfaced |
+This repo turns those observations into six enforceable principles.
 
 ---
 
 ## The Six Principles
 
-### 1. Think Before Coding
-State assumptions explicitly. If a request has multiple interpretations, list them. Ask before implementing — not after making mistakes. If something is unclear mid-task, stop and name it.
-
-### 2. Simplicity First
-Write the minimum code that solves the problem. No speculative features, no abstractions for a single use case, no "configurability" that wasn't asked for. If 200 lines could be 50, rewrite it.
-
-### 3. Surgical Changes
-Touch only what the task requires. Match existing code style — even if you'd do it differently. Mention pre-existing dead code, don't silently delete it. Clean up only what your changes create.
-
-### 4. Goal-Driven Execution
-Transform "fix the bug" into "write a test that reproduces it, then make it pass." Give Claude verifiable success criteria and it can loop to completion on its own.
-
-### 5. Reproduce Before Fixing
-Write a failing test first. Confirm the bug exists. Fix. Confirm the test passes. Run the full suite. Never patch a bug you haven't reproduced.
-
-### 6. Communicate Tradeoffs
-When multiple approaches exist, briefly surface them — what each optimizes, what it sacrifices, and your recommendation. 3–5 lines. Not an essay.
+| # | Principle | Fixes |
+|---|---|---|
+| 1 | **Think Before Coding** | Silent assumptions, missing clarification, hidden confusion |
+| 2 | **Simplicity First** | Overengineering, premature abstraction, bloated PRs |
+| 3 | **Surgical Changes** | Drive-by refactoring, style drift, touching unrelated code |
+| 4 | **Goal-Driven Execution** | Vague tasks, no success criteria, unclear done state |
+| 5 | **Reproduce Before Fixing** | Blind patches, no test coverage, hidden regressions |
+| 6 | **Communicate Tradeoffs** | Silent architecture decisions, no alternatives surfaced |
 
 ---
 
-## Key Insight
-
-From Karpathy:
+## Karpathy's Core Insight
 
 > *"LLMs are exceptionally good at looping until they meet specific goals... Don't tell it what to do, give it success criteria and watch it go."*
 
-The upgrade from "do X" to "success looks like Y, loop until you get there" is the highest-leverage change you can make.
+Principle 4 (Goal-Driven Execution) operationalizes this: transform every task from an imperative instruction into a verifiable goal with a defined done state.
 
 ---
 
 ## Install
 
-**Option A — Per-project (recommended)**
+### Option A — Per Project (fastest)
 
 ```bash
 # New project
@@ -78,48 +53,67 @@ echo "" >> CLAUDE.md
 curl https://raw.githubusercontent.com/BurukalaManiReethika/Karpathy-Inspired-Claude-Code-Guidelines/main/CLAUDE.md >> CLAUDE.md
 ```
 
-**Option B — Claude Code Plugin**
+Claude Code reads `CLAUDE.md` automatically at session start. No other setup needed.
+
+### Option B — Claude Code Plugin (all projects)
 
 ```
-/plugin marketplace add forrestchang/andrej-karpathy-skills
-/plugin install andrej-karpathy-skills@karpathy-skills
+/plugin marketplace add BurukalaManiReethika/Karpathy-Inspired-Claude-Code-Guidelines
+/plugin install karpathy-code-guidelines@karpathy-guidelines
 ```
+
+This installs the skill globally — available in every project without a local `CLAUDE.md`.
 
 ---
 
-## Customization
+## Repo Structure
 
-These guidelines are designed to be merged with your own project rules. Add a section at the bottom of `CLAUDE.md`:
-
-```markdown
-## Project-Specific Guidelines
-
-- Use TypeScript strict mode
-- All API endpoints must have integration tests
-- Follow error handling patterns in `src/utils/errors.ts`
-- Never use `any` type — use `unknown` and narrow it
+```
+CLAUDE.md                              ← Drop this in your project root
+README.md                              ← This file
+Example                                ← Before/after code for all 6 principles
+skills/
+  karpathy-guidelines/
+    SKILL.md                           ← Full skill loaded by Claude Code plugin system
+.claude-plugin/
+  plugin.json                          ← Plugin metadata (name, version, author, source)
+  marketplace.json                     ← Marketplace listing definition
 ```
 
 ---
 
 ## How to Know It's Working
 
-- **Fewer unnecessary diff lines** — only requested changes appear
-- **Clarifying questions before implementation** — not after mistakes
-- **Simpler code the first time** — no rewrites due to overengineering
-- **Clean, focused PRs** — no drive-by refactoring
-- **Bugs fixed with tests** — not blind patches
+- **Clarifying questions come before implementation** — not after mistakes
+- **Diffs are clean** — only lines that were asked to change, change
+- **Code is simple the first time** — no rewrites due to overengineering
+- **Bugs come with tests** — not blind patches
+- **Architecture decisions are explained** — not silently chosen
 
 ---
 
-## Files
+## Customization
 
+Add project-specific rules at the bottom of your `CLAUDE.md`:
+
+```markdown
+## Project-Specific Rules
+
+- TypeScript strict mode — no `any`, use `unknown` and narrow it
+- All API endpoints require integration tests before merge
+- Follow error handling in `src/utils/errors.ts`
+- Never use `console.log` — use the structured logger in `src/lib/logger.ts`
 ```
-CLAUDE.md          ← Drop this in your project root
-README.md          ← This file
-Example            ← Real before/after code examples for all 6 principles
-.claude-plugin/    ← Plugin definition for Claude Code marketplace
-```
+
+Global principles + local rules = agent that knows both the universal standards and your codebase's specific laws.
+
+---
+
+## Tradeoff Note
+
+These guidelines bias toward **caution over speed**. For trivial tasks (typo fixes, obvious one-liners), full rigor is unnecessary overhead.
+
+The target is non-trivial work — anything touching auth, payments, data integrity, APIs, or multi-file changes — where a wrong silent assumption can cost hours.
 
 ---
 
