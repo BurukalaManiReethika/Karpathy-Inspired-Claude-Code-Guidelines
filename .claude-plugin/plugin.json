@@ -1,18 +1,14 @@
 {
-    "name": "andrej-karpathy-skills",
-  "displayName": "Karpathy Coding Guidelines",
-  "version": "1.0.0",
-  "description": "Behavioral guidelines to reduce common LLM coding mistakes, derived from Andrej Karpathy's observations on LLM coding pitfalls",
-  "author": "forrestchang",
-  "version": "1.0.0",
+  "name": "karpathy-code-guidelines",
+  "version": "2.0.0",
+  "description": "Six Karpathy-inspired principles that stop Claude Code from making silent assumptions, overengineering, doing drive-by refactoring, and patching bugs blindly.",
   "author": {
-    "name": "forrestchang"
+    "name": "BurukalaManiReethika",
+    "url": "https://github.com/BurukalaManiReethika"
   },
   "license": "MIT",
-  "repository": "https://github.com/forrestchang/andrej-karpathy-skills",
-  "skills": [
-    "./skills/karpathy-guidelines/SKILL.md"
-  ]
-  "keywords": ["guidelines", "best-practices", "coding", "karpathy"],
-  "skills": ["./skills/karpathy-guidelines"]
+  "source": "./skills/karpathy-guidelines",
+  "homepage": "https://github.com/BurukalaManiReethika/Karpathy-Inspired-Claude-Code-Guidelines",
+  "keywords": ["karpathy", "claude-code", "guidelines", "best-practices", "coding-agent"],
+  "category": "development"
 }
