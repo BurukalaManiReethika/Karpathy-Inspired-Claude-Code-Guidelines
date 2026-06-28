@@ -1,0 +1,15 @@
+{
+  "marketplace": {
+    "name": "karpathy-code-guidelines",
+    "display_name": "Karpathy Code Guidelines",
+    "description": "Six Karpathy-inspired principles that fix Claude Code's most common failure modes — silent assumptions, bloated abstractions, drive-by refactoring, and blind bug patches.",
+    "author": "BurukalaManiReethika",
+    "version": "2.0.0",
+    "license": "MIT",
+    "tags": ["karpathy", "guidelines", "best-practices", "code-quality", "agent-behavior"],
+    "category": "development",
+    "skills": ["karpathy-guidelines"],
+    "install_command": "/plugin install karpathy-code-guidelines@karpathy-guidelines",
+    "repository": "https://github.com/BurukalaManiReethika/Karpathy-Inspired-Claude-Code-Guidelines"
+  }
+}
